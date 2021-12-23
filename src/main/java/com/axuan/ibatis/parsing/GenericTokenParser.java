@@ -1,0 +1,56 @@
+package com.axuan.ibatis.parsing;
+
+/**
+ * 普通记号解析器，处理#{}和${}
+ * @author ZhouXuan
+ * @version 1.0
+ * @date 2021/12/2 8:08
+ */
+public class GenericTokenParser {
+
+    // 有一个开始和结束
+    private final String openToken;
+    private final String closeToken;
+    // 记号处理器
+    private final TokenHandler handler;
+
+    public GenericTokenParser(String openToken, String closeToken, TokenHandler handler) {
+        this.openToken = openToken;
+        this.closeToken = closeToken;
+        this.handler = handler;
+    }
+
+    public String parse(String text) {
+        StringBuilder builder = new StringBuilder();
+        if (text != null && text.length() > 0) {
+            char[] src = text.toCharArray();
+            int offset = 0;
+            int start = text.indexOf(openToken, offset);
+            //#{favouriteSection,jdbcType=VARCHAR}
+            // 这里是循环解析参数，参考GenericTokenParserText,比如可以解析${first_name} ${initial} ${last_name}reporting.这样的字符，里面有3个${}
+            while (start > -1) {
+                // 判断一下 ${ 前面是否有是反斜杠，这个逻辑在旧版的mybatis中（如3.1.0）是没有的
+                if (start > 0 && src[start - 1] == '\\') {
+                    // 新版已经没有调用subString了，改为调用如下的offset方式，提高了效率
+                    builder.append(src, offset, start - offset - 1).append(openToken);
+                    offset = start + openToken.length();
+                } else {
+                    int end = text.indexOf(closeToken, start);
+                    if (end == -1) {
+                        builder.append(src, offset, src.length - offset);
+                        offset = start + openToken.length();
+                        String content = new String(src, offset, end - offset);
+                        // 得到一对大括号里面的字符串后，调用handler.handleToken，比如替换变量这种功能
+                        builder.append(handler.handleToken(content));
+                        offset = end + closeToken.length();
+                    }
+                }
+                start = text.indexOf(openToken, offset);
+            }
+            if (offset < src.length) {
+                builder.append(src, offset, src.length - offset);
+            }
+        }
+        return builder.toString();
+    }
+}

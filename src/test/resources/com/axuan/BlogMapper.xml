@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.axuan.mapper.BlogMapper">
+    <select id="selectBlog" resultType="com.axuan.pojo.Blog">
+        select * from Blog where id = #{id}
+    </select>
+
+    <select id="listBlogs" resultType="com.axuan.pojo.Blog">
+        select * from Blog
+    </select>
+
+    <insert id="insertBlog" parameterType="com.axuan.pojo.Blog">
+        insert into blog(name, author) values(#{name}, #{author})
+    </insert>
+
+    <delete id="deleteBlogById" parameterType="java.lang.Integer">
+        delete from blog where id = #{id}
+    </delete>
+
+    <update id="updateBlog" parameterType="com.axuan.pojo.Blog">
+        update blog set name = #{name}, author = #{author} where id = #{id}
+    </update>
+
+
+</mapper>
